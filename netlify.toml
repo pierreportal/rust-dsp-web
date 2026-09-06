@@ -1,0 +1,13 @@
+[build]
+  # Download the wasm pkg + registry from the pinned rust-dsp release, then
+  # build. Set DSP_VERSION (or the default "latest") to control which DSP
+  # release the deployed client is built against.
+  command = "bash scripts/fetch-dsp.sh && npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[context.production.environment]
+  # Pin to a specific rust-dsp release for reproducible builds.
+  DSP_VERSION = "web-v0.1.0"
