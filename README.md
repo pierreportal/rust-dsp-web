@@ -56,8 +56,12 @@ To target a specific DSP release set the `DSP_VERSION` build env (e.g.
 
 ## Releasing a new DSP module
 
-1. Add the module in the `rust-dsp` repo (`dsp/` + `web/src/graph.rs` + the
-   registry in `web/src/registry.rs`).
+See [`docs/adding-a-module.md`](docs/adding-a-module.md) for the full
+walk-through. In short:
+
+1. Add the module in the `rust-dsp` repo (`web/src/graph.rs` + the registry in
+   `web/src/registry.rs`), rebuild the pkg with `scripts/build-dsp.sh --release`,
+   and copy `web/pkg/` into this repo's `pkg/`.
 2. Publish a `web-vX.Y.Z` tag on rust-dsp → its release workflow builds the pkg
    + registry and attaches `rust-dsp-pkg.tar.gz`.
 3. Deploy this repo with `DSP_VERSION=web-vX.Y.Z` → users get the new module.

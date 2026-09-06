@@ -1,9 +1,18 @@
 import { useCallback, useImperativeHandle, forwardRef } from "react";
-import { type CanvasNode, type CanvasEdge, type Connection, NODE_W, TITLE_H, HANDLE_R, handleY } from "./types";
-import { NODE_SPECS } from "../audio/nodeSpec";
-import { useCanvasInteraction } from "./useCanvasInteraction";
-import { Edges, TempEdge } from "./Edges";
-import { ModuleNode } from "../nodes/ModuleNode";
+import { type CanvasNode, type CanvasEdge, type Connection, NODE_W, TITLE_H, HANDLE_R, handleY } from "../types";
+import { NODE_SPECS } from "../../audio/nodeSpec";
+import { useCanvasInteraction } from "../useCanvasInteraction";
+import { Edges, TempEdge } from "../Edges";
+import { ModuleNode } from "../../nodes/ModuleNode";
+import {
+  CanvasBackground,
+  CanvasContainer,
+  CanvasControls,
+  ControlButton,
+  DragRegion,
+  HandleCircle,
+} from "./styles";
+import { colors } from "../../theme";
 
 export interface CanvasHandle {
   fitView: () => void;
@@ -68,7 +77,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
     mode === "panning" ? "grabbing" : mode === "dragging" ? "grabbing" : "default";
 
   return (
-    <div className="canvas-container" style={{ width: "100%", height: "100%", position: "relative" }}>
+    <CanvasContainer>
       <svg
         ref={svgRef}
         width="100%"
@@ -86,10 +95,10 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
             height={20}
             patternUnits="userSpaceOnUse"
           >
-            <circle cx={10} cy={10} r={1} fill="#2a2e3a" />
+            <circle cx={10} cy={10} r={1} fill={colors.canvasDot} />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="#0b0d11" />
+        <CanvasBackground width="100%" height="100%" />
         <g transform={`translate(${transform.x}, ${transform.y}) scale(${transform.zoom})`}>
           <rect
             x={-10000}
@@ -119,28 +128,25 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
                     onParamChange={node.data.onParamChange}
                   />
                 </foreignObject>
-                <rect
+                <DragRegion
                   width={NODE_W}
                   height={TITLE_H}
                   fill="transparent"
-                  className="node-drag-region"
                 />
                 {spec.inputs.map((_label, i) => (
-                  <circle
+                  <HandleCircle
                     key={`in-${i}`}
                     cx={0}
                     cy={handleY(i)}
                     r={HANDLE_R}
-                    className="handle-circle handle-circle--target"
                   />
                 ))}
                 {spec.outputs.map((_label, i) => (
-                  <circle
+                  <HandleCircle
                     key={`out-${i}`}
                     cx={NODE_W}
                     cy={handleY(i)}
                     r={HANDLE_R}
-                    className="handle-circle handle-circle--source"
                   />
                 ))}
               </g>
@@ -148,11 +154,11 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
           })}
         </g>
       </svg>
-      <div className="canvas-controls">
-        <button onClick={zoomIn} title="Zoom in">+</button>
-        <button onClick={zoomOut} title="Zoom out">−</button>
-        <button onClick={fitView} title="Fit view">⊡</button>
-      </div>
-    </div>
+      <CanvasControls>
+        <ControlButton onClick={zoomIn} title="Zoom in">+</ControlButton>
+        <ControlButton onClick={zoomOut} title="Zoom out">−</ControlButton>
+        <ControlButton onClick={fitView} title="Fit view">⊡</ControlButton>
+      </CanvasControls>
+    </CanvasContainer>
   );
 });

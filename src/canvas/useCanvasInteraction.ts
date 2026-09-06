@@ -110,7 +110,7 @@ export function useCanvasInteraction({
     (e: React.PointerEvent) => {
       if (e.button !== 0) return;
       const target = e.target as Element;
-      if (target.closest && target.closest(".module-node")) return;
+      if (target.closest && target.closest("[data-node]")) return;
       setSelectedEdgeId(null);
       const t = transform;
       const svg = svgRef.current;

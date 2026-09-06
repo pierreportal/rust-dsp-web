@@ -1,10 +1,17 @@
 import styled from 'styled-components';
 
-export const Node = styled.div`
+import { colors } from '../../theme';
+
+interface NodeProps {
+    $color: string;
+}
+
+export const Node = styled.div<NodeProps>`
     width: 180px;
-    background: #11141a;
-    border: 1px solid #2c313c;
-    border-radius: 8px;
+    background: ${colors.nodeBg};
+    border: 1px solid ${colors.nodeBorder};
+    border-color: ${({ $color }) => $color};
+    border-radius: 2px;
     overflow: visible;
     font-size: 12px;
     
@@ -13,15 +20,17 @@ export const Node = styled.div`
     }
 `;
 
-export const NodeTitle = styled.div`
+export const NodeTitle = styled.div<NodeProps>`
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 4px 8px;
     font-weight: 600;
     font-size: 12px;
-    border-radius: 7px 7px 0 0;
-    color: #fff;
+    border-radius: 1px 1px 0 0;
+    background: ${({ $color }) => $color};
+    color: ${colors.text};
+    
     cursor: grab;
 
     &:active {
@@ -50,22 +59,21 @@ export const NodeBody = styled.div`
     min-height: 24px;
 `;
 
-
 export const NodePorts = styled.div`
-display: flex; 
-flex-direction: column; 
-gap: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 `;
 
-interface IPortsProps {
-    out?: boolean;
+interface PortRowProps {
+    $out?: boolean;
 }
 
-export const PortRow = styled.div<IPortsProps>`
+export const PortRow = styled.div<PortRowProps>`
     height: 22px;
     line-height: 22px;
-    color: #8a8f99;
-    ${({ out }) => out && 'text-align: right;'}
+    color: ${colors.muted};
+    ${({ $out }) => $out && 'text-align: right;'}
 `;
 
 export const PortLabel = styled.span`
@@ -74,7 +82,7 @@ export const PortLabel = styled.span`
 
 export const NodeParams = styled.div`
     padding: 6px 8px;
-    border-top: 1px solid #232731;
+    border-top: 1px solid ${colors.nodeDivider};
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -84,17 +92,23 @@ export const ParamHead = styled.div`
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: #8a8f99;
+    color: ${colors.muted};
 `;
 
 export const Param = styled.label`
     & input[type="range"] { 
         width: 100%; 
-        accent-color: #6aa1ff; 
+        accent-color: ${colors.accent}; 
     }
 `;
 
 export const ParamVal = styled.span`
-    color: #6aa1ff; 
+    color: ${colors.accent}; 
     font-variant-numeric: tabular-nums;
+`;
+
+export const Rotary = styled.div`
+    border: solid 1px red;
+    // width: 20px;
+    height: 20px;
 `;

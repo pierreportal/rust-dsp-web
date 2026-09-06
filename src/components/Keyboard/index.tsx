@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { Key, KeyBinding, KeyLabel, KeyboardContainer } from "./styles";
+
 // White keys A S D F G H J, black keys W E T Y U -> C4..B4.
 const KEYS = [
   { note: 60, name: "C", key: "a" },
@@ -64,19 +66,20 @@ export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
   void midiNodeIds;
 
   return (
-    <div className="keyboard">
+    <KeyboardContainer>
       {KEYS.map((k) => (
-        <div
+        <Key
           key={k.note}
-          className={`key${k.black ? " key--black" : ""}${pressed.has(k.note) ? " key--active" : ""}`}
+          $black={k.black}
+          $active={pressed.has(k.note)}
           onMouseDown={() => press(k.note)}
           onMouseUp={() => release(k.note)}
           onMouseLeave={() => release(k.note)}
         >
-          <span className="key__label">{k.name}</span>
-          <span className="key__binding">{k.key}</span>
-        </div>
+          <KeyLabel>{k.name}</KeyLabel>
+          <KeyBinding>{k.key}</KeyBinding>
+        </Key>
       ))}
-    </div>
+    </KeyboardContainer>
   );
 }

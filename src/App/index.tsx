@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { audioEngine } from "./audio/audioEngine";
-import { NODE_SPECS, Kind, type KindCode } from "./audio/nodeSpec";
-import type { CanvasNode, CanvasEdge, Connection } from "./canvas/types";
-import { Canvas, type CanvasHandle } from "./canvas/Canvas";
-import { Palette } from "./components/Palette";
-import { Keyboard } from "./components/Keyboard";
+import { audioEngine } from "../audio/audioEngine";
+import { NODE_SPECS, Kind, type KindCode } from "../audio/nodeSpec";
+import type { CanvasNode, CanvasEdge, Connection } from "../canvas/types";
+import { Canvas, type CanvasHandle } from "../canvas/Canvas";
+import { Keyboard } from "../components/Keyboard";
+import { Palette } from "../components/Palette";
+import { Topbar } from "../components/Topbar";
+import {
+  AppCanvas,
+  AppContainer,
+  AppMain,
+  ErrorBanner,
+  ErrorBannerHint,
+  ErrorCode,
+} from "./styles";
 
 const parsePort = (handle?: string | null): number | null => {
   if (!handle) return null;
@@ -185,26 +194,23 @@ function AppInner() {
 
   if (error) {
     return (
-      <div className="error-banner">
+      <ErrorBanner>
         <strong>Audio init failed.</strong>
         <div>{error}</div>
-        <div className="error-banner__hint">
-          If AudioWorklet is unavailable, serve the app over <code>http://localhost</code> (run
-          <code> npm run dev</code> in <code>web/ui/</code>) — not file:// or a LAN IP.
-        </div>
-      </div>
+        <ErrorBannerHint>
+          If AudioWorklet is unavailable, serve the app over <ErrorCode>http://localhost</ErrorCode> (run
+          <ErrorCode> npm run dev</ErrorCode> in <ErrorCode>web/ui/</ErrorCode>) — not file:// or a LAN IP.
+        </ErrorBannerHint>
+      </ErrorBanner>
     );
   }
 
   return (
-    <div className="app">
+    <AppContainer>
       <Palette onAdd={addNode} />
-      <div className="app__main">
-        <div className="app__topbar">
-          <span className="app__title">rust-dsp modular</span>
-          <span className="app__status">{ready ? "audio ready" : "starting…"}</span>
-        </div>
-        <div className="app__canvas">
+      <AppMain>
+        <Topbar ready={ready} />
+        <AppCanvas>
           <Canvas
             ref={canvasRef}
             nodes={nodes}
@@ -214,10 +220,10 @@ function AppInner() {
             onNodesDelete={onNodesDelete}
             onNodePositionChange={onNodePositionChange}
           />
-        </div>
+        </AppCanvas>
         <Keyboard midiNodeIds={midiNodeIds} onNoteOn={onNoteOn} onNoteOff={onNoteOff} />
-      </div>
-    </div>
+      </AppMain>
+    </AppContainer>
   );
 }
 
