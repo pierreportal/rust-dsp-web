@@ -21,5 +21,6 @@ export const GlobalStyle = createGlobalStyle`
     background: ${colors.bg};
     color: ${colors.text};
     font-family: ${fonts.base};
+    user-select: none;
   }
 `;

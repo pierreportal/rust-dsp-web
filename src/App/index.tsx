@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Box, Text } from "grommet";
 
 import { audioEngine } from "../audio/audioEngine";
 import { NODE_SPECS, Kind, type KindCode } from "../audio/nodeSpec";
@@ -7,14 +8,7 @@ import { Canvas, type CanvasHandle } from "../canvas/Canvas";
 import { Keyboard } from "../components/Keyboard";
 import { Palette } from "../components/Palette";
 import { Topbar } from "../components/Topbar";
-import {
-  AppCanvas,
-  AppContainer,
-  AppMain,
-  ErrorBanner,
-  ErrorBannerHint,
-  ErrorCode,
-} from "./styles";
+import { ErrorCode } from "./styles";
 
 const parsePort = (handle?: string | null): number | null => {
   if (!handle) return null;
@@ -194,23 +188,32 @@ function AppInner() {
 
   if (error) {
     return (
-      <ErrorBanner>
-        <strong>Audio init failed.</strong>
-        <div>{error}</div>
-        <ErrorBannerHint>
+      <Box
+        margin="medium"
+        pad="medium"
+        round="small"
+        background="errorBg"
+        align="start"
+        gap="xsmall"
+      >
+        <Text weight="bold" color="errorText">
+          Audio init failed.
+        </Text>
+        <Text color="errorText">{error}</Text>
+        <Text size="small" color="errorHint" margin={{ top: "small" }}>
           If AudioWorklet is unavailable, serve the app over <ErrorCode>http://localhost</ErrorCode> (run
           <ErrorCode> npm run dev</ErrorCode> in <ErrorCode>web/ui/</ErrorCode>) — not file:// or a LAN IP.
-        </ErrorBannerHint>
-      </ErrorBanner>
+        </Text>
+      </Box>
     );
   }
 
   return (
-    <AppContainer>
+    <Box direction="row" height="100vh">
       <Palette onAdd={addNode} />
-      <AppMain>
+      <Box flex direction="column" background="bg" style={{ minWidth: 0 }}>
         <Topbar ready={ready} />
-        <AppCanvas>
+        <Box flex background="canvasBg" style={{ minHeight: 0 }}>
           <Canvas
             ref={canvasRef}
             nodes={nodes}
@@ -220,10 +223,10 @@ function AppInner() {
             onNodesDelete={onNodesDelete}
             onNodePositionChange={onNodePositionChange}
           />
-        </AppCanvas>
+        </Box>
         <Keyboard midiNodeIds={midiNodeIds} onNoteOn={onNoteOn} onNoteOff={onNoteOff} />
-      </AppMain>
-    </AppContainer>
+      </Box>
+    </Box>
   );
 }
 

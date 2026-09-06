@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-import { Key, KeyBinding, KeyLabel, KeyboardContainer } from "./styles";
+import { Box, Text } from "grommet";
 
 // White keys A S D F G H J, black keys W E T Y U -> C4..B4.
 const KEYS = [
@@ -66,20 +65,49 @@ export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
   void midiNodeIds;
 
   return (
-    <KeyboardContainer>
-      {KEYS.map((k) => (
-        <Key
-          key={k.note}
-          $black={k.black}
-          $active={pressed.has(k.note)}
-          onMouseDown={() => press(k.note)}
-          onMouseUp={() => release(k.note)}
-          onMouseLeave={() => release(k.note)}
-        >
-          <KeyLabel>{k.name}</KeyLabel>
-          <KeyBinding>{k.key}</KeyBinding>
-        </Key>
-      ))}
-    </KeyboardContainer>
+    <Box
+      direction="row"
+      flex={false}
+      background="panel"
+      border={{ side: "top", color: "border" }}
+      pad="small"
+      style={{ height: 120, userSelect: "none" }}
+    >
+      {KEYS.map((k) => {
+        const active = pressed.has(k.note);
+        const bg = active ? "keyActive" : k.black ? "keyBlack" : "keyWhite";
+        const fg = active ? "#ffffff" : k.black ? "#dddddd" : "#222222";
+        return (
+          <Box
+            key={k.note}
+            flex={k.black ? false : "grow"}
+            background={bg}
+            align="center"
+            justify="end"
+            style={{
+              cursor: "pointer",
+              borderRadius: 4,
+              border: `1px solid ${k.black ? "#000000" : "#c8c8c0"}`,
+              paddingBottom: 6,
+              flex: k.black ? "0 0 6%" : undefined,
+              height: k.black ? "60%" : undefined,
+              alignSelf: k.black ? "flex-start" : "stretch",
+              margin: k.black ? "0 -3%" : undefined,
+              zIndex: k.black ? 2 : undefined,
+            }}
+            onMouseDown={() => press(k.note)}
+            onMouseUp={() => release(k.note)}
+            onMouseLeave={() => release(k.note)}
+          >
+            <Text size="small" weight="bold" color={fg}>
+              {k.name}
+            </Text>
+            <Text size="xsmall" color={fg} style={{ opacity: 0.6 }}>
+              {k.key}
+            </Text>
+          </Box>
+        );
+      })}
+    </Box>
   );
 }

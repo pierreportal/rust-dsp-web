@@ -1,17 +1,12 @@
 import { useCallback, useImperativeHandle, forwardRef } from "react";
+import { Box, Button } from "grommet";
+import { Scan, ZoomIn, ZoomOut } from "grommet-icons";
 import { type CanvasNode, type CanvasEdge, type Connection, NODE_W, TITLE_H, HANDLE_R, handleY } from "../types";
 import { NODE_SPECS } from "../../audio/nodeSpec";
 import { useCanvasInteraction } from "../useCanvasInteraction";
 import { Edges, TempEdge } from "../Edges";
 import { ModuleNode } from "../../nodes/ModuleNode";
-import {
-  CanvasBackground,
-  CanvasContainer,
-  CanvasControls,
-  ControlButton,
-  DragRegion,
-  HandleCircle,
-} from "./styles";
+import { CanvasBackground, DragRegion, HandleCircle } from "./styles";
 import { colors } from "../../theme";
 
 export interface CanvasHandle {
@@ -77,7 +72,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
     mode === "panning" ? "grabbing" : mode === "dragging" ? "grabbing" : "default";
 
   return (
-    <CanvasContainer>
+    <Box fill style={{ position: "relative" }}>
       <svg
         ref={svgRef}
         width="100%"
@@ -154,11 +149,39 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
           })}
         </g>
       </svg>
-      <CanvasControls>
-        <ControlButton onClick={zoomIn} title="Zoom in">+</ControlButton>
-        <ControlButton onClick={zoomOut} title="Zoom out">−</ControlButton>
-        <ControlButton onClick={fitView} title="Fit view">⊡</ControlButton>
-      </CanvasControls>
-    </CanvasContainer>
+      <Box
+        direction="column"
+        gap="small"
+        style={{ position: "absolute", bottom: 12, right: 12 }}
+      >
+        <Button
+          icon={<ZoomIn size="small" />}
+          title="Zoom in"
+          onClick={zoomIn}
+          color="panel"
+          pad="small"
+          hoverIndicator={{ color: "panelHover" }}
+          focusIndicator={false}
+        />
+        <Button
+          icon={<ZoomOut size="small" />}
+          title="Zoom out"
+          onClick={zoomOut}
+          color="panel"
+          pad="small"
+          hoverIndicator={{ color: "panelHover" }}
+          focusIndicator={false}
+        />
+        <Button
+          icon={<Scan size="small" />}
+          title="Fit view"
+          onClick={fitView}
+          color="panel"
+          pad="small"
+          hoverIndicator={{ color: "panelHover" }}
+          focusIndicator={false}
+        />
+      </Box>
+    </Box>
   );
 });
