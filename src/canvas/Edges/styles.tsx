@@ -16,7 +16,7 @@ interface EdgePathProps {
 
 export const EdgePath = styled.path<EdgePathProps>`
   stroke: ${({ $selected }) => ($selected ? colors.selectedEdge : colors.accent)};
-  stroke-width: ${({ $selected }) => ($selected ? 3 : 2)};
+  stroke-width: ${({ $selected }) => ($selected ? 3 : 1)};
   stroke-dasharray: 6 4;
   opacity: ${({ $selected }) => ($selected ? 1 : 0.8)};
 `;

@@ -6,6 +6,7 @@
 // imports from here.
 
 import registry from "../../pkg/module-registry.json";
+import { moduleColors } from "../theme";
 
 export interface ParamSpec {
   name: string;
@@ -50,7 +51,10 @@ export const Kind = {
 
 /** Module specs keyed by kind code (fully registry-driven). */
 export const NODE_SPECS: Record<number, NodeSpec> = Object.fromEntries(
-  reg.order.map((k) => [k, reg.modules[String(k)]])
+  reg.order.map((k) => [
+    k,
+    { ...reg.modules[String(k)], color: moduleColors[k] ?? reg.modules[String(k)].color },
+  ])
 );
 
 /** Palette (insertion) order as declared by the registry. */

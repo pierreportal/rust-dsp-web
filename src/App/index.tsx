@@ -139,7 +139,7 @@ function AppInner() {
     const built: CanvasNode[] = [
       buildNode(Kind.Midi, 0, 120, midi),
       buildNode(Kind.Osc, 260, 40, osc),
-      buildNode(Kind.Adsr, 260, 240, adsr),
+      buildNode(Kind.Adsr, 260, 440, adsr),
       buildNode(Kind.Vca, 520, 140, vca),
       buildNode(Kind.Out, 780, 140, out),
     ];
@@ -209,10 +209,10 @@ function AppInner() {
   }
 
   return (
-    <Box direction="row" height="100vh">
-      <Palette onAdd={addNode} />
-      <Box flex direction="column" background="bg" style={{ minWidth: 0 }}>
-        <Topbar ready={ready} />
+    <Box flex height="100vh" direction="column" background="bg" style={{ minWidth: 0 }}>
+      <Topbar ready={ready} />
+      <Box direction="row" height="100vh">
+        <Palette onAdd={addNode} />
         <Box flex background="canvasBg" style={{ minHeight: 0 }}>
           <Canvas
             ref={canvasRef}
@@ -224,8 +224,8 @@ function AppInner() {
             onNodePositionChange={onNodePositionChange}
           />
         </Box>
-        <Keyboard midiNodeIds={midiNodeIds} onNoteOn={onNoteOn} onNoteOff={onNoteOff} />
       </Box>
+      <Keyboard midiNodeIds={midiNodeIds} onNoteOn={onNoteOn} onNoteOff={onNoteOff} />
     </Box>
   );
 }

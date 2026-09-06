@@ -11,11 +11,11 @@ export const Topbar = ({ ready }: ITopbarProps) => {
         <Header
             background="panel"
             border={{ side: "bottom", color: "border" }}
-            pad={{ horizontal: "medium", vertical: "small" }}
+            pad={{ horizontal: "16px", vertical: "xsmall" }}
             flex={false}
         >
             <Text weight="bold" size="medium">
-                rust-dsp modular
+                COARSE
             </Text>
             <Box direction="row" align="center" gap="small">
                 <Status size="small" color={ready ? "accent" : "muted"} />

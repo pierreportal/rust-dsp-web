@@ -30,7 +30,7 @@ function handleWorldPos(
 
 function bezierPath(sx: number, sy: number, tx: number, ty: number): string {
   const dx = Math.abs(tx - sx);
-  const cp = Math.max(dx * 0.5, 50);
+  const cp = Math.max(dx * 0.8, 50);
   return `M ${sx},${sy} C ${sx + cp},${sy} ${tx - cp},${ty} ${tx},${ty}`;
 }
 
@@ -60,7 +60,7 @@ export function Edges({ nodes, edges, selectedId, onEdgeClick }: EdgesProps) {
                 attributeName="stroke-dashoffset"
                 from="0"
                 to="-20"
-                dur="0.8s"
+                dur="0.4s"
                 repeatCount="indefinite"
               />
             </EdgePath>

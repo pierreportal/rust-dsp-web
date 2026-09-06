@@ -1,12 +1,13 @@
-import { useCallback, useImperativeHandle, forwardRef } from "react";
-import { Box, Button } from "grommet";
-import { Scan, ZoomIn, ZoomOut } from "grommet-icons";
+import { useCallback, useImperativeHandle, useState, forwardRef } from "react";
+import { Box, Button, Text } from "grommet";
+import { Close, Scan, ZoomIn, ZoomOut } from "grommet-icons";
 import { type CanvasNode, type CanvasEdge, type Connection, NODE_W, TITLE_H, HANDLE_R, handleY } from "../types";
 import { NODE_SPECS } from "../../audio/nodeSpec";
 import { useCanvasInteraction } from "../useCanvasInteraction";
 import { Edges, TempEdge } from "../Edges";
 import { ModuleNode } from "../../nodes/ModuleNode";
-import { CanvasBackground, DragRegion, HandleCircle } from "./styles";
+import { CanvasBackground, Bullet, DragRegion, HandleCircle } from "./styles";
+import { RxQuestionMark } from "react-icons/rx";
 import { colors } from "../../theme";
 
 export interface CanvasHandle {
@@ -68,6 +69,8 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
     [edges, onEdgesDelete, onNodesDelete]
   );
 
+  const [showHelp, setShowHelp] = useState(true);
+
   const cursor =
     mode === "panning" ? "grabbing" : mode === "dragging" ? "grabbing" : "default";
 
@@ -86,8 +89,8 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
         <defs>
           <pattern
             id="dots"
-            width={20}
-            height={20}
+            width={10}
+            height={10}
             patternUnits="userSpaceOnUse"
           >
             <circle cx={10} cy={10} r={1} fill={colors.canvasDot} />
@@ -149,6 +152,43 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
           })}
         </g>
       </svg>
+      {showHelp && (
+        <Box
+          width="300px"
+          background="panel"
+          border={{ color: "border" }}
+          round="small"
+          elevation="medium"
+          pad="medium"
+          gap="xsmall"
+          style={{ position: "absolute", bottom: 32, right: 72, maxWidth: "60%" }}
+        >
+          <Box
+            direction="row"
+            align="center"
+            justify="between"
+            style={{ marginBottom: 4 }}
+          >
+            <Text size="small" weight="bold">
+              How to use
+            </Text>
+            <Button
+              plain
+              focusIndicator={false}
+              title="Dismiss"
+              onClick={() => setShowHelp(false)}
+            >
+              <Close size="small" color="muted" />
+            </Button>
+          </Box>
+          <Bullet>Drag a module title to move it</Bullet>
+          <Bullet>Drag a port handle to patch (connect) modules</Bullet>
+          <Bullet>Click a patch cable to select it, then press Delete to unpatch</Bullet>
+          <Bullet>Click empty canvas and drag to pan, scroll to zoom</Bullet>
+          <Bullet>Turn knobs by dragging up/down; double-click to reset</Bullet>
+          <Bullet>Play notes with the keyboard at the bottom (A W S E D F T G Y H U J)</Bullet>
+        </Box>
+      )}
       <Box
         direction="column"
         gap="small"
@@ -158,7 +198,6 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
           icon={<ZoomIn size="small" />}
           title="Zoom in"
           onClick={zoomIn}
-          color="panel"
           pad="small"
           hoverIndicator={{ color: "panelHover" }}
           focusIndicator={false}
@@ -167,7 +206,6 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
           icon={<ZoomOut size="small" />}
           title="Zoom out"
           onClick={zoomOut}
-          color="panel"
           pad="small"
           hoverIndicator={{ color: "panelHover" }}
           focusIndicator={false}
@@ -176,7 +214,14 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
           icon={<Scan size="small" />}
           title="Fit view"
           onClick={fitView}
-          color="panel"
+          pad="small"
+          hoverIndicator={{ color: "panelHover" }}
+          focusIndicator={false}
+        />
+        <Button
+          icon={<RxQuestionMark size={12} />}
+          title="How to"
+          onClick={() => setShowHelp((s) => !s)}
           pad="small"
           hoverIndicator={{ color: "panelHover" }}
           focusIndicator={false}

@@ -70,40 +70,43 @@ export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
       flex={false}
       background="panel"
       border={{ side: "top", color: "border" }}
-      pad="small"
-      style={{ height: 120, userSelect: "none" }}
+      pad="xsmall"
+      style={{
+        height: 60,
+        userSelect: "none",
+        // opacity: 0,
+        display: 'none',
+        position: "absolute",
+        bottom: 0,
+        // width: '400px'
+      }}
     >
       {KEYS.map((k) => {
         const active = pressed.has(k.note);
         const bg = active ? "keyActive" : k.black ? "keyBlack" : "keyWhite";
-        const fg = active ? "#ffffff" : k.black ? "#dddddd" : "#222222";
+        const fg = active ? "#ffffff" : k.black ? "#e0dcf0" : "#1f1b2e";
         return (
           <Box
             key={k.note}
-            flex={k.black ? false : "grow"}
+            flex="grow"
             background={bg}
             align="center"
             justify="end"
             style={{
               cursor: "pointer",
-              borderRadius: 4,
+              borderRadius: 2,
               border: `1px solid ${k.black ? "#000000" : "#c8c8c0"}`,
               paddingBottom: 6,
-              flex: k.black ? "0 0 6%" : undefined,
-              height: k.black ? "60%" : undefined,
-              alignSelf: k.black ? "flex-start" : "stretch",
-              margin: k.black ? "0 -3%" : undefined,
-              zIndex: k.black ? 2 : undefined,
             }}
             onMouseDown={() => press(k.note)}
             onMouseUp={() => release(k.note)}
             onMouseLeave={() => release(k.note)}
           >
             <Text size="small" weight="bold" color={fg}>
-              {k.name}
+              {k.key.toUpperCase()}
             </Text>
             <Text size="xsmall" color={fg} style={{ opacity: 0.6 }}>
-              {k.key}
+              {k.name}
             </Text>
           </Box>
         );

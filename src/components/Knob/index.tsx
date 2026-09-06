@@ -52,7 +52,6 @@ export function Knob({
   max,
   step,
   defaultValue,
-  color = colors.accent,
   label,
   onChange,
 }: KnobProps) {
@@ -154,24 +153,24 @@ export function Knob({
             />
           );
         })} */}
-        <circle
+        {/* <circle
           cx={C}
           cy={C}
           r={R_TRACK}
           fill="none"
           stroke={colors.nodeBorder}
           strokeWidth="0"
-        />
+        /> */}
         {d && (
           <path
             d={d}
             fill="none"
-            stroke={color}
+            stroke={colors.accent}
             strokeWidth="2"
             strokeLinecap="round"
           />
         )}
-        <circle cx={C} cy={C} r={R_BODY} fill="#1c212b" stroke={colors.nodeBorder} strokeWidth="1" />
+        <circle cx={C} cy={C} r={R_BODY} fill="#191624" stroke={colors.nodeBorder} strokeWidth="1" />
         <line
           x1={C}
           y1={C}
