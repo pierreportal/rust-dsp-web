@@ -14,16 +14,15 @@ export function Palette({ onAdd }: Props) {
       pad="xsmall"
       gap="xxsmall"
       overflow="auto"
-    // direction="row"
     >
-      {/* <Text
+      <Text
         size="small"
         weight="bold"
         color="muted"
         style={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
       >
         Modules
-      </Text> */}
+      </Text>
 
 
       {PALETTE_ORDER.map((kind) => {
@@ -35,7 +34,7 @@ export function Palette({ onAdd }: Props) {
             hoverIndicator={{ color: "panelHover" }}
             focusIndicator={false}
             title={`Add ${spec.label}`}
-          // style={{ borderLeft: `3px solid ${spec.color}` }}
+            style={{ borderLeft: `3px solid ${spec.color}` }}
           >
             <Box
               direction="row"
