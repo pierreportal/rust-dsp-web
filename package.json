@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@midival/core": "^0.2.0",
     "geist": "^1.7.2",
     "grommet": "^2.56.1",
     "grommet-icons": "^4.14.0",

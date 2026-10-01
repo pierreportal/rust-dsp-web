@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Text } from "grommet";
-
 import { audioEngine } from "../audio/audioEngine";
 import { NODE_SPECS, Kind, type KindCode } from "../audio/nodeSpec";
 import type { CanvasNode, CanvasEdge, Connection } from "../canvas/types";
@@ -8,6 +7,7 @@ import { Canvas, type CanvasHandle } from "../canvas/Canvas";
 import { Keyboard } from "../components/Keyboard";
 import { Palette } from "../components/Palette";
 import { Topbar } from "../components/Topbar";
+import { midiManager } from "../MIDI/midiManager";
 import { ErrorCode } from "./styles";
 
 const parsePort = (handle?: string | null): number | null => {
@@ -22,6 +22,7 @@ function AppInner() {
   const [nodes, setNodes] = useState<CanvasNode[]>([]);
   const [edges, setEdges] = useState<CanvasEdge[]>([]);
   const [ready, setReady] = useState(false);
+  const [running, setRunning] = useState(() => audioEngine.isRunning);
   const [error, setError] = useState<string | null>(null);
   const idCounter = useRef(0);
   const canvasRef = useRef<CanvasHandle>(null);
@@ -114,19 +115,29 @@ function AppInner() {
     let cancelled = false;
     (async () => {
       try {
+        // Deliberately not awaiting `resume()`: without a user gesture the
+        // browser leaves the context suspended and the promise never settles,
+        // which would stall the first paint. The engine resumes itself on the
+        // first interaction, and reports the transition via `subscribe`.
         await audioEngine.init();
-        await audioEngine.resume();
         if (cancelled) return;
         setReady(true);
         loadDefaultPatch();
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       }
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => audioEngine.subscribe(() => setRunning(audioEngine.isRunning)), []);
+
+  useEffect(() => {
+    // Needs no user activation because we ask for MIDI without sysex.
+    void midiManager.ensureAccess();
   }, []);
 
   const loadDefaultPatch = () => {
@@ -167,21 +178,24 @@ function AppInner() {
     setEdges(builtEdges);
   };
 
-  const midiNodeIds = nodes
-    .filter((n) => n.data.kind === Kind.Midi)
-    .map((n) => Number(n.id));
+  const midiNodeIds = useMemo(
+    () => nodes.filter((n) => n.data.kind === Kind.Midi).map((n) => Number(n.id)),
+    [nodes]
+  );
 
   const onNoteOn = useCallback(
     (note: number) => {
-      audioEngine.resume();
-      midiNodeIds.forEach((id) => audioEngine.noteOn(id, note));
+      // First real interaction is often a note press, so nudge the context
+      // awake. Fire-and-forget: this promise does not settle without a gesture.
+      void audioEngine.resume();
+      for (const id of midiNodeIds) audioEngine.noteOn(id, note);
     },
     [midiNodeIds]
   );
   const onNoteOff = useCallback(
     (note: number) => {
       void note;
-      midiNodeIds.forEach((id) => audioEngine.noteOff(id));
+      for (const id of midiNodeIds) audioEngine.noteOff(id);
     },
     [midiNodeIds]
   );
@@ -210,7 +224,7 @@ function AppInner() {
 
   return (
     <Box flex height="100vh" direction="column" background="bg" style={{ minWidth: 0 }}>
-      <Topbar ready={ready} />
+      <Topbar ready={ready} running={running} />
       <Box direction="row" height="100vh">
         <Palette onAdd={addNode} />
         <Box flex background="canvasBg" style={{ minHeight: 0 }}>

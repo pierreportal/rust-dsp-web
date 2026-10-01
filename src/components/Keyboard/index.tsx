@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Box, Text } from "grommet";
+import { useMIDINotes } from "../../MIDI/useMIDI";
 
 // White keys A S D F G H J, black keys W E T Y U -> C4..B4.
 const KEYS = [
@@ -17,6 +18,8 @@ const KEYS = [
   { note: 71, name: "B", key: "j" },
 ];
 
+const KEY_TO_MIDI = new Map(KEYS.map((k) => [k.key, k.note]));
+
 interface Props {
   midiNodeIds: number[];
   onNoteOn: (note: number) => void;
@@ -26,30 +29,45 @@ interface Props {
 export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
   const [pressed, setPressed] = useState<Set<number>>(new Set());
 
-  const press = (note: number) => {
-    if (pressed.has(note)) return;
-    setPressed((p) => new Set(p).add(note));
-    onNoteOn(note);
-  };
-  const release = (note: number) => {
-    if (!pressed.has(note)) return;
-    setPressed((p) => {
-      const n = new Set(p);
-      n.delete(note);
-      return n;
-    });
-    onNoteOff(note);
-  };
+  const press = useCallback(
+    (note: number) => {
+      setPressed((p) => {
+        if (p.has(note)) return p;
+        const n = new Set(p);
+        n.add(note);
+        return n;
+      });
+      onNoteOn(note);
+    },
+    [onNoteOn]
+  );
+
+  const release = useCallback(
+    (note: number) => {
+      setPressed((p) => {
+        if (!p.has(note)) return p;
+        const n = new Set(p);
+        n.delete(note);
+        return n;
+      });
+      onNoteOff(note);
+    },
+    [onNoteOff]
+  );
+
+  useMIDINotes((event) => {
+    if (event.type === "on") press(event.note);
+    else release(event.note);
+  });
 
   useEffect(() => {
-    const keyToMidi = new Map(KEYS.map((k) => [k.key, k.note]));
     const down = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      const midi = keyToMidi.get(e.key.toLowerCase());
+      const midi = KEY_TO_MIDI.get(e.key.toLowerCase());
       if (midi !== undefined) press(midi);
     };
     const up = (e: KeyboardEvent) => {
-      const midi = keyToMidi.get(e.key.toLowerCase());
+      const midi = KEY_TO_MIDI.get(e.key.toLowerCase());
       if (midi !== undefined) release(midi);
     };
     window.addEventListener("keydown", down);
@@ -58,7 +76,7 @@ export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  });
+  }, [press, release]);
 
   // midiNodeIds is present so consumers can read it; the actual note routing
   // is done by the parent via onNoteOn/onNoteOff.
