@@ -269,7 +269,6 @@ export function useCanvasInteraction({
   );
 
   const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();

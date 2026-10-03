@@ -130,6 +130,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
                   width={NODE_W}
                   height={TITLE_H}
                   fill="transparent"
+                  style={{ pointerEvents: "none" }}
                 />
                 {spec.inputs.map((_label, i) => (
                   <HandleCircle
