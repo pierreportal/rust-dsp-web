@@ -37,3 +37,24 @@ export const HANDLE_R = 5;
 export function handleY(index: number): number {
   return (index + 0.5) * PORT_ROW_H + TITLE_H;
 }
+
+export function portIndex(handle?: string | null): number {
+  if (!handle) return -1;
+  const i = handle.indexOf("-");
+  if (i < 0) return -1;
+  const n = parseInt(handle.slice(i + 1), 10);
+  return Number.isNaN(n) ? -1 : n;
+}
+
+export function portHandle(side: "in" | "out", index: number): string {
+  return `${side}-${index}`;
+}
+
+export function edgeId(
+  source: number,
+  sourcePort: number,
+  target: number,
+  targetPort: number,
+): string {
+  return `e${source}-out-${sourcePort}-${target}-in-${targetPort}`;
+}

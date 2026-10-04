@@ -1,20 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CanvasEdge, CanvasNode, Connection } from "../canvas/types";
+import { CanvasEdge, CanvasNode, Connection, edgeId, portHandle, portIndex } from "../canvas/types";
 import { Kind, KindCode, NODE_SPECS } from "../audio/nodeSpec";
 import { audioEngine } from "../audio/audioEngine";
+import type { PatchData, PatchEdge } from "../patch/patchCodec";
 
-const parsePort = (handle?: string | null): number | null => {
-    if (!handle) return null;
-    const i = handle.indexOf("-");
-    if (i < 0) return null;
-    const n = parseInt(handle.slice(i + 1), 10);
-    return Number.isNaN(n) ? null : n;
-};
+const edgeFromPorts = (edge: PatchEdge): CanvasEdge => ({
+    id: edgeId(edge.source, edge.sourcePort, edge.target, edge.targetPort),
+    source: String(edge.source),
+    sourceHandle: portHandle("out", edge.sourcePort),
+    target: String(edge.target),
+    targetHandle: portHandle("in", edge.targetPort),
+});
 
 export const usePatch = () => {
     const [nodes, setNodes] = useState<CanvasNode[]>([]);
     const [edges, setEdges] = useState<CanvasEdge[]>([]);
     const idCounter = useRef(0);
+
+    const nodesRef = useRef(nodes);
+    nodesRef.current = nodes;
 
     const nextId = () => idCounter.current++;
 
@@ -60,16 +64,21 @@ export const usePatch = () => {
     const onConnect = useCallback(
         (conn: Connection) => {
             const edge: CanvasEdge = {
-                id: `e${conn.source}-${conn.sourceHandle}-${conn.target}-${conn.targetHandle}`,
+                id: edgeId(
+                    Number(conn.source),
+                    Math.max(0, portIndex(conn.sourceHandle)),
+                    Number(conn.target),
+                    Math.max(0, portIndex(conn.targetHandle))
+                ),
                 source: conn.source,
                 sourceHandle: conn.sourceHandle,
                 target: conn.target,
                 targetHandle: conn.targetHandle,
             };
             setEdges((eds) => [...eds, edge]);
-            const fromPort = parsePort(conn.sourceHandle);
-            const toPort = parsePort(conn.targetHandle);
-            if (fromPort != null && toPort != null) {
+            const fromPort = portIndex(conn.sourceHandle);
+            const toPort = portIndex(conn.targetHandle);
+            if (fromPort >= 0 && toPort >= 0) {
                 audioEngine.connect(Number(conn.source), fromPort, Number(conn.target), toPort);
             }
         },
@@ -80,9 +89,9 @@ export const usePatch = () => {
         const ids = new Set(deleted.map((e) => e.id));
         setEdges((eds) => eds.filter((e) => !ids.has(e.id)));
         for (const e of deleted) {
-            const fromPort = parsePort(e.sourceHandle);
-            const toPort = parsePort(e.targetHandle);
-            if (fromPort != null && toPort != null) {
+            const fromPort = portIndex(e.sourceHandle);
+            const toPort = portIndex(e.targetHandle);
+            if (fromPort >= 0 && toPort >= 0) {
                 audioEngine.disconnect(Number(e.source), fromPort, Number(e.target), toPort);
             }
         }
@@ -100,7 +109,54 @@ export const usePatch = () => {
         );
     }, []);
 
+    const clearPatch = useCallback(() => {
+        for (const node of nodesRef.current) audioEngine.removeNode(Number(node.id));
+        setNodes([]);
+        setEdges([]);
+    }, []);
+
+    /**
+     * Replaces the whole graph with `patch`, in the audio engine as well as in
+     * React state. The patch is expected to be already sanitized by
+     * `decodePatch`, so every cable here is guaranteed to be accepted by the
+     * engine and every node is guaranteed to exist.
+     */
+    const loadPatch = useCallback(
+        (patch: PatchData) => {
+            clearPatch();
+
+            const built: CanvasNode[] = patch.nodes.map((n) => {
+                audioEngine.addNode(n.id, n.kind);
+                for (const [name, value] of Object.entries(n.params)) {
+                    audioEngine.setParam(n.id, name, value);
+                }
+                return {
+                    id: String(n.id),
+                    position: { x: n.x, y: n.y },
+                    data: { kind: n.kind, params: { ...n.params }, onParamChange: handleParamChange },
+                };
+            });
+
+            const builtEdges: CanvasEdge[] = patch.edges.map(edgeFromPorts);
+            for (const e of builtEdges) {
+                audioEngine.connect(
+                    Number(e.source),
+                    portIndex(e.sourceHandle),
+                    Number(e.target),
+                    portIndex(e.targetHandle)
+                );
+            }
+
+            idCounter.current = patch.nodes.reduce((max, n) => Math.max(max, n.id), -1) + 1;
+
+            setNodes(built);
+            setEdges(builtEdges);
+        },
+        [clearPatch, handleParamChange]
+    );
+
     const loadDefaultPatch = () => {
+        clearPatch();
         const midi = nextId();
         const osc = nextId();
         const adsr = nextId();
@@ -115,13 +171,8 @@ export const usePatch = () => {
             buildNode(Kind.Out, 780, 140, out),
         ];
 
-        const edge = (from: number, fromPort: number, to: number, toPort: number): CanvasEdge => ({
-            id: `e${from}-out-${fromPort}-${to}-in-${toPort}`,
-            source: String(from),
-            sourceHandle: `out-${fromPort}`,
-            target: String(to),
-            targetHandle: `in-${toPort}`,
-        });
+        const edge = (from: number, fromPort: number, to: number, toPort: number): CanvasEdge =>
+            edgeFromPorts({ source: from, sourcePort: fromPort, target: to, targetPort: toPort });
 
         const builtEdges: CanvasEdge[] = [
             edge(midi, 1, osc, 0),
@@ -131,7 +182,12 @@ export const usePatch = () => {
             edge(vca, 0, out, 0),
         ];
         for (const e of builtEdges) {
-            audioEngine.connect(Number(e.source), parsePort(e.sourceHandle)!, Number(e.target), parsePort(e.targetHandle)!);
+            audioEngine.connect(
+                Number(e.source),
+                portIndex(e.sourceHandle),
+                Number(e.target),
+                portIndex(e.targetHandle)
+            );
         }
 
         setNodes(built);
@@ -144,6 +200,7 @@ export const usePatch = () => {
 
     return {
         loadDefaultPatch,
+        loadPatch,
         nodes,
         edges,
         addNode,

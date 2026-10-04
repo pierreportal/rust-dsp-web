@@ -3,10 +3,33 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import { MIDI_ACTIVITY_MS, midiManager, type MIDINoteEvent, type MIDIState } from "./midiManager";
+import {
+  MIDI_ACTIVITY_MS,
+  midiManager,
+  type MIDICCEvent,
+  type MIDINoteEvent,
+  type MIDIState,
+} from "./midiManager";
 
 export function useMIDIState(): MIDIState {
   return useSyncExternalStore(midiManager.subscribe, midiManager.getState, midiManager.getState);
+}
+
+/**
+ * Subscribe to controller-change events. Held in a ref so callers do not need
+ * to memoise the callback and never observe a stale closure.
+ */
+export function useMIDICC(callback: (event: MIDICCEvent) => void) {
+  const latest = useRef(callback);
+  latest.current = callback;
+
+  useEffect(
+    () =>
+      midiManager.onCC((event) => {
+        latest.current(event);
+      }),
+    []
+  );
 }
 
 /**

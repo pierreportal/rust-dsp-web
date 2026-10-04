@@ -1,5 +1,5 @@
-import { Box, Header, Select, Text } from "grommet";
-import { StatusCritical, StatusGood, StatusUnknown, StatusWarning } from "grommet-icons";
+import { Box, Button, Header, Select, Text } from "grommet";
+import { Share, StatusCritical, StatusGood, StatusUnknown, StatusWarning } from "grommet-icons";
 import {
     MIDI_ALL_INPUTS,
     midiManager,
@@ -10,6 +10,8 @@ import { useMIDIActive, useMIDIState } from "../../MIDI/useMIDI";
 interface ITopbarProps {
     ready: boolean;
     running: boolean;
+    linkCopied: boolean;
+    onShareLink: () => void;
 }
 
 type StatusColor = "accent" | "muted" | "warning" | "critical";
@@ -71,7 +73,7 @@ const MIDIControl = () => {
     );
 };
 
-export const Topbar = ({ ready, running }: ITopbarProps) => {
+export const Topbar = ({ ready, running, linkCopied, onShareLink }: ITopbarProps) => {
     const Status = ready ? StatusGood : StatusUnknown;
     const audioLabel = !ready
         ? "starting…"
@@ -97,6 +99,16 @@ export const Topbar = ({ ready, running }: ITopbarProps) => {
                         </Text>
                     </Box>
                     <MIDIControl />
+                    <Button
+                        size="small"
+                        label={linkCopied ? "Link copied" : "Share link"}
+                        icon={<Share size="small" />}
+                        onClick={onShareLink}
+                        disabled={!ready}
+                        title="Put this patch in the address bar and copy the link"
+                        hoverIndicator={{ color: "panelHover" }}
+                        focusIndicator={false}
+                    />
                 </Box>
             </Box>
         </Header>

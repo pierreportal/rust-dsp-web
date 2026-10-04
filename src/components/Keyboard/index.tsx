@@ -21,12 +21,11 @@ const KEYS = [
 const KEY_TO_MIDI = new Map(KEYS.map((k) => [k.key, k.note]));
 
 interface Props {
-  midiNodeIds: number[];
   onNoteOn: (note: number) => void;
   onNoteOff: (note: number) => void;
 }
 
-export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
+export function Keyboard({ onNoteOn, onNoteOff }: Props) {
   const [pressed, setPressed] = useState<Set<number>>(new Set());
 
   const press = useCallback(
@@ -77,10 +76,6 @@ export function Keyboard({ midiNodeIds, onNoteOn, onNoteOff }: Props) {
       window.removeEventListener("keyup", up);
     };
   }, [press, release]);
-
-  // midiNodeIds is present so consumers can read it; the actual note routing
-  // is done by the parent via onNoteOn/onNoteOff.
-  void midiNodeIds;
 
   return (
     <Box

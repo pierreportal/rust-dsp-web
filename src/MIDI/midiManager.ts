@@ -31,8 +31,19 @@ export interface MIDINoteEvent {
   channel: number;
 }
 
+/**
+ * A control-change message. `value` is the raw 0-127 byte; the engine centres
+ * and scales it, so callers should not pre-normalise.
+ */
+export interface MIDICCEvent {
+  cc: number;
+  value: number;
+  channel: number;
+}
+
 const NOTE_OFF = 0x80;
 const NOTE_ON = 0x90;
+const CONTROL_CHANGE = 0xb0;
 const SYSTEM = 0xf0;
 
 /** How long after the last message the activity indicator stays lit (ms). */
@@ -51,6 +62,7 @@ class MIDIManager {
   private pending: Promise<void> | null = null;
   private stateListeners = new Set<() => void>();
   private noteListeners = new Set<(event: MIDINoteEvent) => void>();
+  private ccListeners = new Set<(event: MIDICCEvent) => void>();
   private bound = new Map<string, (event: MIDIMessageEvent) => void>();
 
   getState = (): MIDIState => this.state;
@@ -68,6 +80,13 @@ class MIDIManager {
     this.noteListeners.add(listener);
     return () => {
       this.noteListeners.delete(listener);
+    };
+  };
+
+  onCC = (listener: (event: MIDICCEvent) => void) => {
+    this.ccListeners.add(listener);
+    return () => {
+      this.ccListeners.delete(listener);
     };
   };
 
@@ -157,6 +176,23 @@ class MIDIManager {
     if (status >= SYSTEM) return;
 
     const command = status & 0xf0;
+
+    // Controllers are a separate stream from notes: a patch can be playing a
+    // chord while a CC sweeps a filter, so these must not share a handler.
+    // Channel is reported but not used for routing — the engine matches on the
+    // controller number alone, which keeps a mapping working whatever channel
+    // the controller happens to send on.
+    if (command === CONTROL_CHANGE) {
+      this.lastEventAt = Date.now();
+      const ccEvent: MIDICCEvent = {
+        cc: data[1],
+        value: data.length > 2 ? data[2] : 0,
+        channel: status & 0x0f,
+      };
+      for (const listener of this.ccListeners) listener(ccEvent);
+      return;
+    }
+
     const note = data[1];
     const velocity = data.length > 2 ? data[2] : 0;
 

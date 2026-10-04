@@ -215,12 +215,23 @@ class AudioEngine {
     this.post({ op: "setParam", id, name, value });
   }
 
-  noteOn(id: number, note: number, vel = 127) {
-    this.post({ op: "noteOn", id, note, vel });
+  /** Play a note. The engine allocates it to one of its polyphonic voices. */
+  noteOn(note: number, vel = 127) {
+    this.post({ op: "noteOn", note, vel });
   }
 
-  noteOff(id: number) {
-    this.post({ op: "noteOff", id });
+  /** Release the voice currently holding `note`. */
+  noteOff(note: number) {
+    this.post({ op: "noteOff", note });
+  }
+
+  /**
+   * Feed a controller value to every Controller module tuned to `cc`. Routed
+   * unconditionally — a controller modulates the patch as a whole, not one
+   * voice — and `value` is the raw 0-127 byte.
+   */
+  setCC(cc: number, value: number) {
+    this.post({ op: "setCC", cc, value });
   }
 }
 

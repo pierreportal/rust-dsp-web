@@ -47,6 +47,7 @@ export const Kind = {
   Constant: 7,
   Out: 8,
   Midi: 9,
+  CC: 13,
 } as const;
 
 /** Module specs keyed by kind code (fully registry-driven). */

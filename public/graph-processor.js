@@ -3,6 +3,9 @@
 // it posts mutations (addNode/removeNode/connect/disconnect/setParam/noteOn/
 // noteOff) here, and we apply them to the mirrored Graph.
 //
+// Notes are addressed by pitch, not by node id: the wasm side owns a polyphonic
+// voice pool and allocates each note to a voice itself.
+//
 // AudioWorkletGlobalScope (Chromium) lacks `URL`, `fetch`, `TextDecoder`, and
 // `TextEncoder`, so we polyfill both text codecs and receive the raw wasm bytes
 // from the main thread (which can fetch), then compile + instantiate via the
@@ -54,10 +57,13 @@ class GraphProcessor extends AudioWorkletProcessor {
           this.graph.set_param(msg.id, msg.name, msg.value);
           break;
         case "noteOn":
-          this.graph.note_on(msg.id, msg.note, msg.vel ?? 127);
+          this.graph.note_on(msg.note, msg.vel ?? 127);
           break;
         case "noteOff":
-          this.graph.note_off(msg.id);
+          this.graph.note_off(msg.note);
+          break;
+        case "setCC":
+          this.graph.set_cc(msg.cc, msg.value);
           break;
       }
     } catch (err) {
